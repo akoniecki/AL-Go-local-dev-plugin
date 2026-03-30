@@ -1,5 +1,7 @@
 # AL-Go Local Dev
 
+[![Pester](https://github.com/akoniecki/AL-Go-local-dev-plugin/actions/workflows/pester.yml/badge.svg)](https://github.com/akoniecki/AL-Go-local-dev-plugin/actions/workflows/pester.yml)
+
 AL-Go Local Dev is a Codex plugin for Business Central developers who already have a working AL-Go local Docker environment created with `localDevEnv.ps1`.
 
 It helps move a change from the edited AL file to a manual-test-ready state in the local container:
@@ -31,10 +33,12 @@ If a partial publish is unsafe because the container does not match the current 
 
 ## Install
 
+Clone this repository first, then run one of the install scripts below from the plugin repository root.
+
 Repo-local install:
 
 ```powershell
-pwsh -File .\plugins\al-go-local-dev\install\Install-RepoPlugin.ps1 -RepoRoot <repo-root>
+pwsh -File .\install\Install-RepoPlugin.ps1 -RepoRoot C:\path\to\your\al-go-repo
 ```
 
 Personal install:

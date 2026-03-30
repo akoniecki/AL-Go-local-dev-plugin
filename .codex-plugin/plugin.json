@@ -1,0 +1,41 @@
+{
+  "name": "al-go-local-dev",
+  "version": "1.0.0",
+  "description": "Codex plugin for AL-Go local Docker development with BcContainerHelper-backed build, publish, test, and manual-test handoff workflows.",
+  "author": {
+    "name": "Adrian Koniecki",
+    "url": "https://www.linkedin.com/in/akoniecki/"
+  },
+  "homepage": "https://github.com/akoniecki/AL-Go-local-dev-plugin",
+  "license": "MIT",
+  "keywords": [
+    "business-central",
+    "al",
+    "al-go",
+    "docker",
+    "bccontainerhelper",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AL-Go Local Dev",
+    "shortDescription": "Build, publish, test, and hand off AL changes for manual testing in a local BC container.",
+    "longDescription": "Repo-aware skill bundle for AL developers using AL-Go local Docker environments. It discovers the current app from the edited file, honors AL-Go analyzer settings, uses BcContainerHelper for compiler-folder and publish workflows, and opens the local Business Central client when the change is ready for manual testing.",
+    "developerName": "Adrian Koniecki",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/akoniecki/AL-Go-local-dev-plugin",
+    "defaultPrompt": [
+      "Use AL-Go Local Dev to prepare my current AL change for manual testing in the local BC container.",
+      "Use AL-Go Local Dev to build and publish the app containing the file I am editing.",
+      "Use AL-Go Local Dev to discover the current AL-Go repo context and the local BC browser URL."
+    ],
+    "brandColor": "#10A37F",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
+  },
+  "repository": "https://github.com/akoniecki/AL-Go-local-dev-plugin"
+}
