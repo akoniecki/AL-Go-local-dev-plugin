@@ -35,7 +35,7 @@
     ],
     "brandColor": "#10A37F",
     "composerIcon": "./assets/icon.png",
-    "logo": "./assets/logo.png"
+    "logo": "./assets/icon.png"
   },
   "repository": "https://github.com/akoniecki/AL-Go-local-dev-plugin"
 }
