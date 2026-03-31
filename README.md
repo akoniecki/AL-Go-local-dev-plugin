@@ -1,7 +1,5 @@
 # AL-Go Local Dev
 
-[![Pester](https://github.com/akoniecki/AL-Go-local-dev-plugin/actions/workflows/pester.yml/badge.svg)](https://github.com/akoniecki/AL-Go-local-dev-plugin/actions/workflows/pester.yml)
-
 AL-Go Local Dev is a Codex plugin for Business Central developers who already have a working AL-Go local Docker environment created with `localDevEnv.ps1`.
 
 It helps move a change from the edited AL file to a manual-test-ready state in the local container:
@@ -33,12 +31,12 @@ If a partial publish is unsafe because the container does not match the current 
 
 ## Install
 
-Clone this repository first, then run one of the install scripts below from the plugin repository root.
+Run the install scripts from this plugin repository root.
 
 Repo-local install:
 
 ```powershell
-pwsh -File .\install\Install-RepoPlugin.ps1 -RepoRoot C:\path\to\your\al-go-repo
+pwsh -File .\install\Install-RepoPlugin.ps1 -RepoRoot <repo-root>
 ```
 
 Personal install:
@@ -86,6 +84,8 @@ All scripts return structured JSON with `ok`, `failed`, or `action_required` sta
 ## Tested Scenarios
 
 - Current-app build, publish, and browser handoff against a live `bcserver` container
+- Current-app resolution from a brand-new AL file path before the file exists on disk
+- Comma-separated changed-file input from Dev Box driven manual test flows
 - Warning baseline capture and reuse
 - Fast branch-versus-container mismatch preflight for partial publish
 - Current-app recovery when required `Microsoft_System_*.app` packages are only present in sibling app package folders

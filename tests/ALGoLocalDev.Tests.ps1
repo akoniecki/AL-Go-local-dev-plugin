@@ -143,6 +143,41 @@ Describe 'ALGoLocalDev helper smoke tests' {
         }
     }
 
+    It 'resolves an app root from a new file path that does not exist yet' {
+        InModuleScope ALGoLocalDev {
+            $repoRoot = Join-Path $TestDrive 'repo'
+            $appRoot = Join-Path $repoRoot 'App One'
+            New-Item -Path $appRoot -ItemType Directory -Force | Out-Null
+            Set-Content -Path (Join-Path $appRoot 'app.json') -Value '{}' -Encoding utf8
+
+            $resolved = Resolve-AppRootFromFile -FilePath (Join-Path $appRoot 'src\BrandNewFile.al') -RepoRoot $repoRoot
+
+            $resolved | Should Be ([System.IO.Path]::GetFullPath($appRoot))
+        }
+    }
+
+    It 'splits comma-separated changed files into impacted apps' {
+        InModuleScope ALGoLocalDev {
+            $repoRoot = Join-Path $TestDrive 'repo'
+            $firstAppRoot = Join-Path $repoRoot 'App One'
+            $secondAppRoot = Join-Path $repoRoot 'App Two'
+            New-Item -Path (Join-Path $firstAppRoot 'src') -ItemType Directory -Force | Out-Null
+            New-Item -Path (Join-Path $secondAppRoot 'src') -ItemType Directory -Force | Out-Null
+            Set-Content -Path (Join-Path $firstAppRoot 'app.json') -Value '{}' -Encoding utf8
+            Set-Content -Path (Join-Path $secondAppRoot 'app.json') -Value '{}' -Encoding utf8
+            Set-Content -Path (Join-Path $firstAppRoot 'src\One.al') -Value 'codeunit 50100 One { }' -Encoding utf8
+            Set-Content -Path (Join-Path $secondAppRoot 'src\Two.al') -Value 'codeunit 50101 Two { }' -Encoding utf8
+
+            $impacted = @(Get-ImpactedAppsFromFiles -ChangedFiles @('App One\src\One.al,App Two\src\Two.al') -RepoRoot $repoRoot)
+            $firstAppRoot = [System.IO.Path]::GetFullPath($firstAppRoot)
+            $secondAppRoot = [System.IO.Path]::GetFullPath($secondAppRoot)
+
+            $impacted.Count | Should Be 2
+            ($impacted -contains $firstAppRoot) | Should Be $true
+            ($impacted -contains $secondAppRoot) | Should Be $true
+        }
+    }
+
     It 'returns only publish result objects from Publish-AppFilesToContainer' {
         InModuleScope ALGoLocalDev {
             $context = [pscustomobject]@{

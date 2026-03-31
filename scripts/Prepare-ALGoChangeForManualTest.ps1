@@ -47,11 +47,13 @@ else {
     if ($impactedRoots.Count -eq 0 -and $null -ne $context.CurrentApp) {
         $impactedRoots = @($context.CurrentApp.AppRoot)
     }
-    $sortedRoots = Get-ChangedAppSequence -AppRoots $impactedRoots -RepoRoot $context.RepoRoot
-    $seedApps = foreach ($rootPath in $sortedRoots) {
-        $context.RepoApps | Where-Object { $_.AppRoot -eq $rootPath } | Select-Object -First 1
+    if ($impactedRoots.Count -gt 0) {
+        $sortedRoots = Get-ChangedAppSequence -AppRoots $impactedRoots -RepoRoot $context.RepoRoot
+        $seedApps = foreach ($rootPath in $sortedRoots) {
+            $context.RepoApps | Where-Object { $_.AppRoot -eq $rootPath } | Select-Object -First 1
+        }
+        $targetApps = @(Get-ResolvedAppSequence -SeedApps $seedApps -RepoApps $context.RepoApps -RepoRoot $context.RepoRoot)
     }
-    $targetApps = @(Get-ResolvedAppSequence -SeedApps $seedApps -RepoApps $context.RepoApps -RepoRoot $context.RepoRoot)
 }
 
 if ($null -ne $context.AssociatedTestApp -and ($targetApps.Id -notcontains $context.AssociatedTestApp.Id)) {

@@ -200,20 +200,51 @@ function Resolve-AppRootFromFile {
         [string] $RepoRoot
     )
 
-    $resolvedPath = Resolve-Path -LiteralPath $FilePath -ErrorAction Stop
-    $current = Get-Item -LiteralPath $resolvedPath.Path
-    if ($current.PSIsContainer -eq $false) {
-        $current = $current.Directory
+    $repoRootResolved = if ([System.IO.Path]::IsPathRooted($RepoRoot)) {
+        [System.IO.Path]::GetFullPath($RepoRoot)
+    }
+    else {
+        [System.IO.Path]::GetFullPath((Join-Path (Get-Location).Path $RepoRoot))
+    }
+    $candidatePath = if ([System.IO.Path]::IsPathRooted($FilePath)) {
+        [System.IO.Path]::GetFullPath($FilePath)
+    }
+    else {
+        [System.IO.Path]::GetFullPath((Join-Path (Get-Location).Path $FilePath))
     }
 
-    $repoRootResolved = (Resolve-Path -LiteralPath $RepoRoot).Path
+    $currentPath = if (Test-Path -LiteralPath $candidatePath -PathType Container) {
+        $candidatePath
+    }
+    elseif (Test-Path -LiteralPath $candidatePath) {
+        Split-Path -Path $candidatePath -Parent
+    }
+    else {
+        Split-Path -Path $candidatePath -Parent
+    }
 
-    while ($null -ne $current -and $current.FullName.StartsWith($repoRootResolved, [System.StringComparison]::OrdinalIgnoreCase)) {
-        $appJsonPath = Join-Path $current.FullName 'app.json'
-        if (Test-Path -LiteralPath $appJsonPath -PathType Leaf) {
-            return $current.FullName
+    while (-not [string]::IsNullOrWhiteSpace($currentPath) -and -not (Test-Path -LiteralPath $currentPath)) {
+        $parentPath = Split-Path -Path $currentPath -Parent
+        if ([string]::Equals($parentPath, $currentPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+            break
         }
-        $current = $current.Parent
+        $currentPath = $parentPath
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($currentPath) -and (Test-Path -LiteralPath $currentPath)) {
+        $currentPath = (Resolve-Path -LiteralPath $currentPath).Path
+    }
+
+    while (-not [string]::IsNullOrWhiteSpace($currentPath) -and $currentPath.StartsWith($repoRootResolved, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $appJsonPath = Join-Path $currentPath 'app.json'
+        if (Test-Path -LiteralPath $appJsonPath -PathType Leaf) {
+            return $currentPath
+        }
+        $parentPath = Split-Path -Path $currentPath -Parent
+        if ([string]::Equals($parentPath, $currentPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+            break
+        }
+        $currentPath = $parentPath
     }
 
     throw "Unable to resolve the current app from '$FilePath'."
@@ -757,8 +788,22 @@ function Get-ImpactedAppsFromFiles {
         [string] $RepoRoot
     )
 
+    $normalizedChangedFiles = New-Object System.Collections.Generic.List[string]
+    foreach ($entry in @($ChangedFiles)) {
+        if ([string]::IsNullOrWhiteSpace($entry)) {
+            continue
+        }
+
+        foreach ($part in @($entry -split '[,\r\n;]')) {
+            $trimmed = $part.Trim()
+            if (-not [string]::IsNullOrWhiteSpace($trimmed)) {
+                [void]$normalizedChangedFiles.Add($trimmed)
+            }
+        }
+    }
+
     $appRoots = New-Object System.Collections.Generic.HashSet[string]([System.StringComparer]::OrdinalIgnoreCase)
-    foreach ($file in $ChangedFiles | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
+    foreach ($file in $normalizedChangedFiles) {
         $candidate = if ([System.IO.Path]::IsPathRooted($file)) { $file } else { Join-Path $RepoRoot $file }
         if (-not (Test-Path -LiteralPath $candidate)) {
             continue
@@ -836,9 +881,14 @@ function Resolve-ALGoLocalDevContext {
         }
     }
 
-    $repoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
+    $repoRoot = if ([System.IO.Path]::IsPathRooted($RepoRoot)) {
+        [System.IO.Path]::GetFullPath($RepoRoot)
+    }
+    else {
+        [System.IO.Path]::GetFullPath((Join-Path (Get-Location).Path $RepoRoot))
+    }
     $currentAppRoot = $null
-    if (-not [string]::IsNullOrWhiteSpace($FilePath) -and (Test-Path -LiteralPath $FilePath)) {
+    if (-not [string]::IsNullOrWhiteSpace($FilePath)) {
         $currentAppRoot = Resolve-AppRootFromFile -FilePath $FilePath -RepoRoot $repoRoot
     }
 

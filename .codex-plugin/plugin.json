@@ -1,6 +1,6 @@
 {
   "name": "al-go-local-dev",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Codex plugin for AL-Go local Docker development with BcContainerHelper-backed build, publish, test, and manual-test handoff workflows.",
   "author": {
     "name": "Adrian Koniecki",

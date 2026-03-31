@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1
+
+- Resolve the current app from relative paths and brand-new AL files that do not exist on disk yet, which makes Dev Box manual-test flows work earlier in the edit cycle
+- Accept comma-, newline-, and semicolon-separated `-ChangedFiles` input and guard build, publish, and prepare flows when change detection returns no impacted apps
+- Add Pester coverage for new-file app resolution and multi-file changed-file parsing
+- Refresh release assets and README guidance based on external Dev Box validation
+
 ## 1.0.0
 
 Initial public release.
