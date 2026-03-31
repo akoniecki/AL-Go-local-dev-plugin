@@ -7,13 +7,19 @@ Describe 'ALGoLocalDev helper smoke tests' {
         $modulePath = Join-Path $PSScriptRoot '..\scripts\ALGoLocalDev.psm1'
         Remove-Module ALGoLocalDev -ErrorAction SilentlyContinue
         Import-Module $modulePath -Force | Out-Null
+
+        if (-not (Get-Command -Name Publish-BcContainerApp -ErrorAction SilentlyContinue)) {
+            function global:Publish-BcContainerApp {
+                param()
+            }
+        }
     }
 
     It 'exports the expected public functions' {
         $module = Get-Module ALGoLocalDev
-        ($module.ExportedFunctions.Keys -contains 'Resolve-ALGoLocalDevContext') | Should Be $true
-        ($module.ExportedFunctions.Keys -contains 'Invoke-ALGoBuildInternal') | Should Be $true
-        ($module.ExportedFunctions.Keys -contains 'Publish-AppFilesToContainer') | Should Be $true
+        ($module.ExportedFunctions.Keys -contains 'Resolve-ALGoLocalDevContext') | Should -Be $true
+        ($module.ExportedFunctions.Keys -contains 'Invoke-ALGoBuildInternal') | Should -Be $true
+        ($module.ExportedFunctions.Keys -contains 'Publish-AppFilesToContainer') | Should -Be $true
     }
 
     It 'suggests full branch republish from plain app info objects when a repo dependency version is behind in the container' {
@@ -55,11 +61,11 @@ Describe 'ALGoLocalDev helper smoke tests' {
 
             $readiness = Get-PublishReadiness -Context $context -PublishBuildResults @($app)
 
-            $readiness.IsReady | Should Be $false
-            $readiness.RequiresFullBranchRepublish | Should Be $true
-            $readiness.SuggestedSwitch | Should Be '-RepublishFullBranch'
-            $readiness.Prompt | Should Match '2\.9\.0\.0'
-            $readiness.Prompt | Should Match '2\.13\.0\.0'
+            $readiness.IsReady | Should -Be $false
+            $readiness.RequiresFullBranchRepublish | Should -Be $true
+            $readiness.SuggestedSwitch | Should -Be '-RepublishFullBranch'
+            $readiness.Prompt | Should -Match '2\.9\.0\.0'
+            $readiness.Prompt | Should -Match '2\.13\.0\.0'
         }
     }
 
@@ -102,8 +108,8 @@ Describe 'ALGoLocalDev helper smoke tests' {
 
             $readiness = Get-PublishReadiness -Context $context -PublishBuildResults @($dependency, $app)
 
-            $readiness.IsReady | Should Be $true
-            $readiness.RequiresFullBranchRepublish | Should Be $false
+            $readiness.IsReady | Should -Be $true
+            $readiness.RequiresFullBranchRepublish | Should -Be $false
         }
     }
 
@@ -111,11 +117,11 @@ Describe 'ALGoLocalDev helper smoke tests' {
         InModuleScope ALGoLocalDev {
             $details = Get-PublishErrorDetails -Message "Status Code UnprocessableEntity : Unprocessable Entity The extension could not be deployed, because it tries to replace the existing AppSource app 'CREA Integration' with id '1ee7554d-c7a1-44a9-9d5f-547dc29487e9', which is a dependency to the following AppSource apps: 'DOZera POS by CGI Sverige AB,DOZera eCommerce by CGI Sverige AB'."
 
-            $details.issueType | Should Be 'installed_app_dependency_chain_block'
-            $details.blockingAppName | Should Be 'CREA Integration'
-            $details.dependentApps.Count | Should Be 2
-            $details.suggestedAction | Should Be 'suite_upgrade_flow'
-            $details.message | Should Match 'dedicated uninstall/reinstall suite-upgrade flow'
+            $details.issueType | Should -Be 'installed_app_dependency_chain_block'
+            $details.blockingAppName | Should -Be 'CREA Integration'
+            $details.dependentApps.Count | Should -Be 2
+            $details.suggestedAction | Should -Be 'suite_upgrade_flow'
+            $details.message | Should -Match 'dedicated uninstall/reinstall suite-upgrade flow'
         }
     }
 
@@ -126,12 +132,12 @@ Describe 'ALGoLocalDev helper smoke tests' {
                 'error AL1022: A package with publisher ''CGI Sverige AB'' could not be found.'
             )
 
-            $diagnostics.Count | Should Be 2
-            $diagnostics[0].Severity | Should Be 'warning'
-            $diagnostics[0].Code | Should Be 'AL1025'
-            $diagnostics[0].Line | Should Be 1
-            $diagnostics[1].Severity | Should Be 'error'
-            $diagnostics[1].Code | Should Be 'AL1022'
+            $diagnostics.Count | Should -Be 2
+            $diagnostics[0].Severity | Should -Be 'warning'
+            $diagnostics[0].Code | Should -Be 'AL1025'
+            $diagnostics[0].Line | Should -Be 1
+            $diagnostics[1].Severity | Should -Be 'error'
+            $diagnostics[1].Code | Should -Be 'AL1022'
         }
     }
 
@@ -139,7 +145,7 @@ Describe 'ALGoLocalDev helper smoke tests' {
         InModuleScope ALGoLocalDev {
             $baseline = Read-WarningBaseline -RepoRoot 'C:\repo' -BaselinePath 'C:\repo\.al-go-local-dev\baselines\missing.json'
 
-            $baseline.Count | Should Be 0
+            $baseline.Count | Should -Be 0
         }
     }
 
@@ -152,7 +158,7 @@ Describe 'ALGoLocalDev helper smoke tests' {
 
             $resolved = Resolve-AppRootFromFile -FilePath (Join-Path $appRoot 'src\BrandNewFile.al') -RepoRoot $repoRoot
 
-            $resolved | Should Be ([System.IO.Path]::GetFullPath($appRoot))
+            $resolved | Should -Be ([System.IO.Path]::GetFullPath($appRoot))
         }
     }
 
@@ -172,9 +178,9 @@ Describe 'ALGoLocalDev helper smoke tests' {
             $firstAppRoot = [System.IO.Path]::GetFullPath($firstAppRoot)
             $secondAppRoot = [System.IO.Path]::GetFullPath($secondAppRoot)
 
-            $impacted.Count | Should Be 2
-            ($impacted -contains $firstAppRoot) | Should Be $true
-            ($impacted -contains $secondAppRoot) | Should Be $true
+            $impacted.Count | Should -Be 2
+            ($impacted -contains $firstAppRoot) | Should -Be $true
+            ($impacted -contains $secondAppRoot) | Should -Be $true
         }
     }
 
@@ -198,9 +204,9 @@ Describe 'ALGoLocalDev helper smoke tests' {
 
             $published = @(Publish-AppFilesToContainer -Context $context -BuildResults @($buildResult))
 
-            $published.Count | Should Be 1
-            $published[0].AppId | Should Be 'app-id'
-            $published[0].PSObject.Properties.Name -contains 'PublishDurationMs' | Should Be $true
+            $published.Count | Should -Be 1
+            $published[0].AppId | Should -Be 'app-id'
+            ($published[0].PSObject.Properties.Name -contains 'PublishDurationMs') | Should -Be $true
             Assert-MockCalled Publish-BcContainerApp -Times 1
         }
     }
